@@ -85,3 +85,6 @@ desktop.ini
 *.db
 *.pid
 *.seed
+
+# ===== 编排引擎校验产物 =====
+.verify-out/

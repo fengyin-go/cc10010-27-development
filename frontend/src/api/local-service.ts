@@ -1,6 +1,7 @@
 import { MODULE_BY_KEY } from '@/data/modules'
 import { allRows, listRows, resetRows, saveRows } from '@/data/local-store'
 import type { ActionResult, EntryRow, ModuleMeta, OverviewResult, PageResult } from '@/data/types'
+import { startOrchestrationPlan, stopOrchestrationPlan } from './orchestration'
 
 // 会写进数据的「往回走」动作：命中就把这条记录标成异常态，看板上能一眼看出来。
 const NEGATIVE_ACTIONS = ['撤销', '作废', '拒绝', '驳回', '停用', '忽略', '下线', '回滚']
@@ -29,6 +30,13 @@ export function listEntries(key: string, filters: Record<string, string> = {}): 
 }
 
 export function runAction(key: string, id: number, action: string): ActionResult {
+  // 编排调度的启动/停止走编排引擎：分波准入、超时判失败、断点续跑与跨模块写回都在引擎里。
+  if (key === 'schedule' && action === '启动编排') {
+    return startOrchestrationPlan(id)
+  }
+  if (key === 'schedule' && action === '停止编排') {
+    return stopOrchestrationPlan(id)
+  }
   const meta = moduleMeta(key)
   const target = meta.actionTargets[action]
   if (!target) {
